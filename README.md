@@ -1,33 +1,38 @@
 # Nihongo Palette
 
-Nihongo Palette is a teacher-first web app for Japanese language lessons. It helps a teacher manage lesson writing, furigana, vocabulary, correction history, AI-generated reading articles, and vocabulary review in one workspace.
+Nihongo Palette は、日本語レッスンを行う講師のためのWebアプリです。作文、ふりがな、語彙、添削履歴、AI生成記事、語彙テストをひとつのワークスペースで扱えるようにすることを目的にしています。
 
-The current implementation is an MVP / local development build. It uses fixed teacher and student IDs, Supabase for persistence, and OpenAI for selected AI features. Full production authentication and strict row-level access rules are intentionally left for a later phase.
+現在の実装はMVP / ローカル開発版です。本ログインはまだ入れておらず、固定の講師ID・生徒IDを使って、Supabaseへの保存やOpenAIを使った一部AI機能を検証できる状態です。本番向けの認証、権限管理、厳密なRLSは今後のフェーズで対応します。
 
-## Project Status
+## プロジェクトの状態
 
-This repository contains the working prototype for the Nihongo Palette MVP.
+このリポジトリには、Nihongo Palette MVPの動作プロトタイプが入っています。
 
-Implemented:
+実装済み:
 
-- Temporary teacher / student role switching
-- Teacher and student dashboards
-- Writing workspace with editing, reading mode, furigana, vocabulary, questions, teacher replies, and tracked correction view
-- Article generation page using OpenAI
-- Furigana generation using a server-side morphological parser
-- Vocabulary list and vocabulary test flow
-- OpenAI-based vocabulary meaning judgement
-- Supabase persistence for writings, vocabulary, questions, corrections, articles, and vocabulary test history
+- 仮ログイン画面での講師 / 生徒ビュー切り替え
+- 講師 / 生徒ダッシュボード
+- 作文ワークスペース
+- 作文の編集モード / 閲覧モード切り替え
+- ふりがな表示のON / OFF
+- テキスト選択時のアクションポップオーバー
+- 語彙追加、質問追加、講師返信
+- 添削箇所を全文内で表示するTracked Changesビュー
+- OpenAIを使った記事生成
+- 形態素解析によるふりがな生成
+- 語彙リストと語彙テストのUI
+- OpenAIによる語彙テスト回答判定
+- Supabaseへの作文、語彙、質問、添削、記事、語彙テスト履歴の保存
 
-Planned / not yet production-ready:
+今後対応予定 / 本番未対応:
 
-- Real authentication
-- Per-teacher / per-student authorization
-- Google Sheet / Google Calendar synchronization
-- Production RLS policies
-- Deployment configuration
+- 本ログイン
+- 講師 / 生徒ごとの厳密なアクセス制御
+- Google Sheet / Google Calendar連携
+- 本番用RLSポリシー
+- デプロイ設定
 
-## Tech Stack
+## 技術スタック
 
 - Next.js 16 App Router
 - React 19
@@ -35,133 +40,136 @@ Planned / not yet production-ready:
 - Tailwind CSS 4
 - Supabase
 - OpenAI API
-- kuromoji for Japanese tokenization / furigana support
+- kuromoji: 日本語の形態素解析 / ふりがな生成補助
 
-> Note: This project uses a newer Next.js version with behavior that may differ from older App Router examples. See `AGENTS.md` before making framework-level changes.
+> 注意: このプロジェクトは新しいNext.jsを使っています。古いApp Routerの実装例と挙動が異なる可能性があります。Next.jsの挙動や構成を変更する場合は、まず `AGENTS.md` と `node_modules/next/dist/docs/` 以下のローカルドキュメントを確認してください。
 
-## Pages and Features
+## ページ構成と機能
 
 ### `/`
 
-Temporary login / role selection screen.
+仮ログイン / ロール選択画面です。
 
-- Teacher-style login UI
-- Student Google login placeholder
-- Test buttons for teacher and student views
-- Links to dashboard and writing workspace
+- 講師向けログイン風UI
+- 生徒向けGoogleログイン風UI
+- テスト用の講師View / 生徒View切り替えボタン
+- ダッシュボード、作文ワークスペースへの導線
 
 ### `/dashboard?role=teacher`
 
-Teacher dashboard.
+講師用ダッシュボードです。
 
-- Teacher-focused overview
-- Student / lesson preparation context
-- Feature cards for writing, vocabulary, and articles
-- Lesson activity chart
-- Entry points into the main workspaces
+- 講師向けの概要表示
+- 授業準備に必要な情報の入口
+- 作文、語彙、記事の機能カード
+- レッスン数の簡易チャート
+- 各ワークスペースへの導線
 
 ### `/dashboard?role=student`
 
-Student dashboard.
+生徒用ダッシュボードです。
 
-- Student-focused learning overview
-- Access to writing, vocabulary, and article learning flows
-- Simplified review-oriented copy
+- 生徒向けの学習状況表示
+- 作文、語彙、記事の学習導線
+- 復習を意識した文言とレイアウト
+- 講師向けの生徒選択UIは表示しません
 
 ### `/workspace?role=teacher`
 
-Teacher writing workspace.
+講師用の作文ワークスペースです。
 
-Main areas:
+主な構成:
 
-- Left panel: saved writing list and new writing creation
-- Center panel: writing editor, reading mode, furigana preview, and tracked correction view
-- Right panel: vocabulary memory bank and teacher assistant panel
+- 左パネル: 保存済み作文リスト、新規作文作成
+- 中央パネル: 作文エディタ、閲覧モード、ふりがなプレビュー、添削表示
+- 右パネル: 語彙メモリーバンク、講師サポート、質問管理
 
-Important features:
+主な機能:
 
-- Save writings to Supabase
-- Generate furigana preview
-- Toggle edit / reading mode
-- Toggle furigana on / off
-- Select text and show action overlay
-- Add selected vocabulary with automatic reading and meaning
-- Ask / record student questions
-- Save teacher replies
-- Display tracked changes for writing edits
-- Show deleted text with red strikethrough
-- Show inserted / corrected text with green highlight
+- 作文をSupabaseへ保存
+- ふりがなプレビュー生成
+- 編集モード / 閲覧モード切り替え
+- ふりがなON / OFF切り替え
+- テキスト選択時のアクションポップオーバー
+- 選択語彙の追加
+- 追加語彙の読み・意味の自動補助
+- 生徒からの質問記録
+- 講師返信の保存
+- 作文全文の中で添削差分を表示
+- 削除箇所は赤字 + 打ち消し線
+- 修正後 / 新規追加箇所は緑系ハイライト
 
 ### `/workspace?role=student`
 
-Student writing workspace.
+生徒用の作文ワークスペースです。
 
-Main differences from teacher view:
+講師Viewとの主な違い:
 
-- Student review panel instead of teacher support panel
-- Displays student questions and teacher replies as review notes
-- Keeps vocabulary review visible for learner practice
-- Shows tracked correction changes without teacher-only controls
+- 講師サポートパネルではなく、生徒向け復習パネルを表示
+- 質問と講師返信を復習用メモとして確認
+- 語彙復習を見やすく表示
+- 添削差分は確認できるが、講師専用の操作は表示しません
 
 ### `/articles?role=teacher`
 
-AI article generation workspace.
+AI記事生成ワークスペースです。
 
-Main areas:
+主な構成:
 
-- Left panel: saved / generated article history
-- Center panel: generation prompt, JLPT level, tone selection, article body, and furigana display
-- Right panel: article vocabulary list
+- 左パネル: 保存済み / 生成済み記事一覧
+- 中央パネル: 記事生成プロンプト、JLPTレベル、文体選択、生成記事本文、ふりがな表示
+- 右パネル: 記事ごとの語彙リスト
 
-Important features:
+主な機能:
 
-- Generate Japanese reading articles with OpenAI
-- Choose JLPT level
-- Choose tone: natural, conversational, or business-oriented
-- Toggle furigana
-- Select article text and show action overlay
-- Add selected words to article vocabulary
-- Save generated articles to Supabase
+- OpenAIによる日本語読解記事生成
+- JLPTレベル選択
+- 文体選択: 自然、会話寄り、ビジネス寄り
+- ふりがなON / OFF切り替え
+- 記事本文のテキスト選択
+- 選択テキストへのアクションポップオーバー
+- 選択語彙の語彙リスト追加
+- 生成記事のSupabase保存
 
 ### `/articles?role=student`
 
-Student article view.
+生徒用の記事閲覧画面です。
 
-- Same article reading layout
-- Student-oriented display
-- Conversation practice questions are hidden from student view
-- Furigana support remains available
+- 講師Viewと近い読解レイアウト
+- 生徒向けの表示に調整
+- 会話練習の質問は生徒Viewでは非表示
+- ふりがな表示に対応
 
 ### `/vocabulary?role=student`
 
-Vocabulary quiz and review workspace.
+語彙テスト / 語彙復習ワークスペースです。
 
-Main modes:
+主なモード:
 
-- AI quiz generation
-- Wordbook test preparation
-- Wordbook test execution
-- Sentence practice
-- Test result screen
+- AIクイズ生成
+- 単語帳テスト準備
+- 単語帳テスト実行
+- 例文作成
+- テスト結果表示
 
-Important features:
+主な機能:
 
-- Select vocabulary sources from writings and generated articles
-- Preview vocabulary before test
-- Enter meaning in free text
-- Use OpenAI to judge answers as correct / close / incorrect
-- Create one-sentence examples after checking meaning
-- Sync learner example sentences back to vocabulary records
-- Save vocabulary test sessions and per-word results to Supabase
+- 作文や生成記事から蓄積された語彙をテスト対象として選択
+- テスト前に語彙、意味、読みを確認
+- 意味を自由記述で入力
+- OpenAIで回答を「正解」「おしい」「不正解」に判定
+- 判定後に1文程度の例文を作成
+- 作成した例文を語彙レコードへ反映
+- 語彙テストのセッションと回答履歴をSupabaseへ保存
 
-## Data Model Overview
+## データモデル概要
 
-The Supabase schema is stored in:
+Supabaseのスキーマと型定義は以下にあります。
 
 - `supabase/schema.sql`
 - `src/lib/supabase/types.ts`
 
-Primary tables:
+主なテーブル:
 
 - `profiles`
 - `students`
@@ -175,16 +183,16 @@ Primary tables:
 - `vocabulary_test_sessions`
 - `vocabulary_test_results`
 
-The current MVP uses fixed IDs:
+現在のMVPでは、以下の固定IDを使っています。
 
-- Teacher: `00000000-0000-4000-8000-000000000001`
-- Student: `00000000-0000-4000-8000-000000000101`
+- 講師: `00000000-0000-4000-8000-000000000001`
+- 生徒: `00000000-0000-4000-8000-000000000101`
 
-See `supabase/README.md` for setup details and RLS notes.
+Supabaseのセットアップ詳細やRLSに関する注意は `supabase/README.md` を確認してください。
 
-## Environment Variables
+## 環境変数
 
-Create `.env.local` based on `.env.example`.
+`.env.example` をもとに `.env.local` を作成してください。
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
@@ -193,35 +201,35 @@ OPENAI_API_KEY=
 OPENAI_MODEL=
 ```
 
-Recommended local model setting for low-cost development:
+ローカル開発では、低コスト検証用に以下のようなモデル設定を想定しています。
 
 ```env
 OPENAI_MODEL=gpt-5.4-nano
 ```
 
-Do not commit `.env.local` or any real API keys.
+`.env.local` や実際のAPIキーは絶対にGitにコミットしないでください。
 
-## Local Development
+## ローカル開発
 
-Install dependencies:
+依存関係をインストールします。
 
 ```bash
 npm install
 ```
 
-Run the development server:
+開発サーバーを起動します。
 
 ```bash
 PORT=3001 npm run dev
 ```
 
-Open:
+ブラウザで開きます。
 
 ```text
 http://localhost:3001/
 ```
 
-Useful direct URLs:
+よく使う確認URL:
 
 ```text
 http://localhost:3001/dashboard?role=teacher
@@ -233,78 +241,78 @@ http://localhost:3001/articles?role=student
 http://localhost:3001/vocabulary?role=student
 ```
 
-## Validation
+## 動作確認
 
-Run lint:
+Lintを実行します。
 
 ```bash
 npm run lint
 ```
 
-Run production build:
+本番ビルドを確認します。
 
 ```bash
 npm run build
 ```
 
-## Supabase Setup
+## Supabaseセットアップ
 
-1. Create or open the Supabase project.
-2. Add local environment values to `.env.local`.
-3. Run the SQL in `supabase/schema.sql`.
-4. Confirm the fixed seed teacher and student exist.
-5. Keep the app private while using MVP permissive policies.
+1. Supabaseプロジェクトを作成、または既存プロジェクトを開きます。
+2. `.env.local` にSupabase URLとanon keyを設定します。
+3. `supabase/schema.sql` のSQLをSupabase SQL Editorで実行します。
+4. 固定の講師・生徒seedデータが作成されていることを確認します。
+5. MVP用の緩いポリシーを使っている間は、アプリを限定的な開発環境として扱います。
 
-Important security note:
+重要なセキュリティ注意:
 
-The current schema includes MVP-friendly access policies for local/private testing. Before real learners use the app, replace these with real Supabase Auth and strict row-level security:
+現在のスキーマには、ローカル / プライベート検証向けのMVP用アクセスポリシーが含まれています。実際の生徒が使う前に、Supabase Authと厳密なRow Level Securityへ置き換えてください。
 
-- Teachers should only access assigned students.
-- Students should only access their own data.
-- Teacher-only support content should not be visible to students unless explicitly shared.
+- 講師は担当生徒のデータだけにアクセスできるようにする
+- 生徒は自分自身のデータだけにアクセスできるようにする
+- 講師専用のサポート情報は、明示的に共有しない限り生徒に見せない
 
-## OpenAI Usage
+## OpenAIの利用箇所
 
-OpenAI is currently used for:
+OpenAIは現在、以下の機能で使っています。
 
-- Article generation
-- Vocabulary meaning explanation
-- Vocabulary answer judgement
+- 記事生成
+- 語彙の意味説明
+- 語彙テストの回答判定
 
-The app routes OpenAI calls through server-side API routes so the API key is not exposed to the browser.
+OpenAI APIキーがブラウザに露出しないよう、呼び出しはサーバー側APIルートを経由しています。
 
-Relevant files:
+関連ファイル:
 
 - `app/api/ai/generate-article/route.ts`
 - `app/api/ai/explain-vocabulary/route.ts`
 - `app/api/ai/judge-vocabulary/route.ts`
 
-## Furigana
+## ふりがな生成
 
-Furigana is generated with server-side tokenization.
+ふりがなは、サーバー側で形態素解析を行って生成します。
 
-Relevant files:
+関連ファイル:
 
 - `app/api/furigana/route.ts`
 - `src/lib/furigana-server.ts`
 - `src/lib/furigana-client.ts`
 - `src/lib/furigana.ts`
 
-The client keeps a fallback path for predictable UI behavior, but server-side parsing is the preferred path.
+クライアント側にはUIを安定させるためのフォールバック処理も残していますが、基本的にはサーバー側の解析結果を使う想定です。
 
-## Current Limitations
+## 現在の制限事項
 
-- Login UI is not real authentication yet.
-- Teacher / student switching is controlled by URL query parameters.
-- Fixed teacher and student IDs are used throughout the MVP.
-- Some features still use local fallback data when Supabase data is unavailable.
-- Google Sheet and Google Calendar synchronization is planned but not implemented.
-- Supabase RLS is not production-hardened.
-- The app is not yet deployed as a public production service.
+- ログインUIはまだ本物の認証ではありません
+- 講師 / 生徒の切り替えはURLクエリで制御しています
+- MVP全体で固定の講師ID・生徒IDを使っています
+- Supabaseデータが取得できない場合、一部ローカルフォールバックデータを使います
+- Google Sheet / Google Calendar連携はまだ未実装です
+- Supabase RLSは本番レベルではありません
+- まだ公開本番サービスとしてのデプロイは行っていません
 
-## Planned Google Sheet Sync
+## 今後予定しているGoogle Sheet連携
 
-The intended future flow is:
+想定している将来フロー:
 
 ```text
 Google Sheet
@@ -314,21 +322,21 @@ Google Sheet
   -> Nihongo Palette
 ```
 
-Target sources:
+連携対象:
 
-- Student log: student name, display name, Gmail, lesson price
-- Master log: lesson date/time, student name, Google Calendar event reference
+- 生徒ログ: 生徒名、表示名、Gmail、レッスン料金
+- マスターログ: レッスン日時、生徒名、Google Calendarイベント参照
 
-The recommended backend path is an Edge Function with a private sync token. Apps Script should not hold broad database credentials.
+推奨するバックエンド構成は、秘密のsync tokenを持つSupabase Edge Function経由です。Apps Scriptに広範囲なDB資格情報を直接持たせない方針です。
 
-## Repository Notes for Engineers
+## 開発者向けメモ
 
-- Keep generated folders out of git: `.next`, `.next-dev`, `node_modules`, `dist`, `out`.
-- Keep local secrets out of git: `.env.local`, real Supabase keys, OpenAI keys.
-- Prefer existing component patterns and color tokens in `app/globals.css`.
-- Do not introduce real authentication without revisiting Supabase RLS.
-- When changing Next.js behavior, check the local Next.js docs under `node_modules/next/dist/docs/` because this project uses Next.js 16.
+- 生成フォルダはGitに入れない: `.next`, `.next-dev`, `node_modules`, `dist`, `out`
+- ローカル秘密情報はGitに入れない: `.env.local`, 実際のSupabaseキー, OpenAIキー
+- UI変更時は、既存コンポーネントと `app/globals.css` の色・トーンを優先する
+- 本ログインを入れる場合は、必ずSupabase RLS設計も同時に見直す
+- Next.jsの挙動を変更する場合は、`node_modules/next/dist/docs/` 以下のローカルドキュメントを確認する
 
-## License
+## ライセンス
 
-Private project. Add a license before making the repository public.
+Private project. 公開リポジトリとして運用する場合は、ライセンス方針を決めてから `LICENSE` を追加してください。
