@@ -1,0 +1,250 @@
+@import "../node_modules/tailwindcss/index.css";
+
+:root {
+  --background: #ddf4fa;
+  --foreground: #2f3337;
+  --primary: #5db6de;
+  --primary-dark: #2f88c5;
+  --accent: #f7b7ad;
+  --sun: #f28a4b;
+  --panel: #ffffff;
+  --panel-soft: #f7fcff;
+  --border: #cdebf5;
+  --muted: #6f7f8a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 9% 18%, rgba(255, 255, 255, 0.72), transparent 24rem),
+    radial-gradient(circle at 90% 12%, rgba(247, 252, 255, 0.62), transparent 22rem),
+    linear-gradient(135deg, #a9dff0 0%, #ddf4fa 44%, #f7fcff 100%);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.soft-frame {
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 80px rgba(47, 136, 197, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.login-frame {
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background:
+    radial-gradient(circle at 74% 44%, rgba(221, 244, 250, 0.8), transparent 17rem),
+    radial-gradient(circle at 90% 74%, rgba(221, 244, 250, 0.64), transparent 13rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 255, 0.88));
+  box-shadow: 0 28px 90px rgba(47, 136, 197, 0.22);
+  backdrop-filter: blur(20px);
+}
+
+.login-card {
+  border: 1px solid rgba(255, 255, 255, 0.86);
+}
+
+.palette-logo {
+  position: relative;
+  height: 4.6rem;
+  width: 4.6rem;
+  flex: none;
+  border: 2px solid rgba(93, 182, 222, 0.36);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 16px 36px rgba(47, 136, 197, 0.12);
+}
+
+.palette-logo::after {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.25rem;
+  height: 1rem;
+  width: 1.65rem;
+  border-bottom: 0.22rem solid rgba(242, 138, 75, 0.52);
+  border-left: 0.22rem solid rgba(242, 138, 75, 0.52);
+  border-radius: 999px;
+  content: "";
+  transform: rotate(30deg);
+}
+
+.palette-logo span {
+  position: absolute;
+  height: 0.85rem;
+  width: 0.85rem;
+  border-radius: 999px;
+}
+
+.palette-logo span:nth-child(1) {
+  left: 1rem;
+  top: 1.4rem;
+  background: #2f88c5;
+}
+
+.palette-logo span:nth-child(2) {
+  left: 2.25rem;
+  top: 0.8rem;
+  background: #2f88c5;
+}
+
+.palette-logo span:nth-child(3) {
+  left: 0.9rem;
+  top: 2.65rem;
+  background: #ef584e;
+}
+
+.palette-logo span:nth-child(4) {
+  right: 0.75rem;
+  top: 2rem;
+  background: #8bc95c;
+}
+
+.lesson-illustration {
+  position: relative;
+  min-height: 440px;
+  overflow: hidden;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 86% 24%, rgba(93, 182, 222, 0.18), transparent 8rem),
+    radial-gradient(circle at 18% 76%, rgba(247, 183, 173, 0.16), transparent 9rem),
+    linear-gradient(145deg, #f7fcff 0%, #dff4fb 100%);
+}
+
+.lesson-illustration::before,
+.lesson-illustration::after {
+  position: absolute;
+  border-radius: 999px;
+  content: "";
+}
+
+.lesson-illustration::before {
+  right: -4rem;
+  bottom: -3rem;
+  width: 15rem;
+  height: 15rem;
+  border: 1.8rem solid rgba(93, 182, 222, 0.14);
+}
+
+.lesson-illustration::after {
+  left: 2rem;
+  top: 2rem;
+  width: 5rem;
+  height: 5rem;
+  background: rgba(247, 183, 173, 0.2);
+}
+
+.leaf-stem {
+  position: absolute;
+  right: 2.3rem;
+  bottom: 3.5rem;
+  width: 0.25rem;
+  height: 7.5rem;
+  border-radius: 999px;
+  background: rgba(47, 136, 197, 0.46);
+  transform: rotate(28deg);
+}
+
+.leaf-stem span {
+  position: absolute;
+  width: 1.5rem;
+  height: 2.2rem;
+  border-radius: 999px 999px 999px 0;
+  background: rgba(93, 182, 222, 0.45);
+}
+
+.leaf-stem span:nth-child(1) {
+  left: -1.4rem;
+  top: 0.8rem;
+  transform: rotate(-48deg);
+}
+
+.leaf-stem span:nth-child(2) {
+  right: -1.4rem;
+  top: 2.4rem;
+  transform: rotate(30deg);
+}
+
+.leaf-stem span:nth-child(3) {
+  left: -1.35rem;
+  top: 4.1rem;
+  transform: rotate(-36deg);
+}
+
+.sakura {
+  position: absolute;
+  width: 3.3rem;
+  height: 3.3rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #fff 0 0.22rem, transparent 0.25rem),
+    radial-gradient(ellipse at 50% 18%, rgba(247, 183, 173, 0.75) 0 0.7rem, transparent 0.72rem),
+    radial-gradient(ellipse at 80% 48%, rgba(247, 183, 173, 0.7) 0 0.72rem, transparent 0.74rem),
+    radial-gradient(ellipse at 62% 82%, rgba(247, 183, 173, 0.68) 0 0.72rem, transparent 0.74rem),
+    radial-gradient(ellipse at 28% 82%, rgba(247, 183, 173, 0.68) 0 0.72rem, transparent 0.74rem),
+    radial-gradient(ellipse at 18% 48%, rgba(247, 183, 173, 0.7) 0 0.72rem, transparent 0.74rem);
+  opacity: 0.85;
+}
+
+.mini-chart-bar {
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(180deg, #5db6de, #2f88c5);
+  box-shadow: 0 8px 18px rgba(47, 136, 197, 0.18);
+}
+
+.chat-bubble-icon {
+  position: relative;
+  display: inline-block;
+  height: 1.35rem;
+  width: 1.55rem;
+  flex: none;
+  border: 2px solid #1592d1;
+  border-radius: 999px;
+  background: #eef8ff;
+}
+
+.chat-bubble-icon::after {
+  position: absolute;
+  right: 0.05rem;
+  bottom: -0.24rem;
+  height: 0.45rem;
+  width: 0.45rem;
+  border-right: 2px solid #1592d1;
+  border-bottom: 2px solid #1592d1;
+  border-bottom-right-radius: 0.25rem;
+  background: #eef8ff;
+  content: "";
+  transform: rotate(28deg);
+}
+
+.workspace-ruby {
+  ruby-position: over;
+  margin-inline: 0.04em;
+}
+
+.workspace-ruby rt {
+  font-size: 0.46em;
+  font-weight: 700;
+  line-height: 1;
+  color: #2f88c5;
+  letter-spacing: 0;
+  user-select: none;
+}
