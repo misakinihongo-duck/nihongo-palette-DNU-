@@ -7,7 +7,7 @@ import { FIXED_STUDENT_ID } from "@/lib/supabase/constants";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
 import { fetchVocabularyJudgement } from "@/lib/vocabulary-judge-client";
-import type { Role, Student } from "@/lib/types";
+import type { Role, Student, WorkspaceVocabularyItem, Writing } from "@/lib/types";
 
 type SourceType = "writing" | "article";
 type MainTab = "ai" | "wordbook";
@@ -31,7 +31,7 @@ type QuizWord = {
   example: string;
   sourceId: string;
   sourceType: SourceType;
-  storageTable?: "article_vocabulary_items" | "local_article" | "vocabulary_items";
+  storageTable?: "article_vocabulary_items" | "local_article" | "local_workspace" | "vocabulary_items";
   judgeLabel?: string;
   judgeMessage?: string;
   learnerSentence?: string;
@@ -53,12 +53,18 @@ type JudgeResult = {
   message: string;
 };
 
+type StoredWorkspaceState = {
+  writings?: Writing[];
+  vocabulary?: WorkspaceVocabularyItem[];
+};
+
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 type ArticleVocabularyRow = Database["public"]["Tables"]["article_vocabulary_items"]["Row"];
 type VocabularyRow = Database["public"]["Tables"]["vocabulary_items"]["Row"];
 type WritingRow = Database["public"]["Tables"]["writings"]["Row"];
 
 const levelOptions: Student["level"][] = ["N5", "N4", "N3", "N2", "N1"];
+const WORKSPACE_STORAGE_KEY = "nihongo-palette-phase2-workspace";
 
 const initialSources: QuizSource[] = [
   ...writings.map((writing) => ({
@@ -270,6 +276,95 @@ function mergeQuizWords(primaryWords: QuizWord[], fallbackWords: QuizWord[]) {
   return [...wordMap.values()];
 }
 
+function readLocalWorkspaceState(): StoredWorkspaceState {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const savedValue = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+
+    if (!savedValue) {
+      return {};
+    }
+
+    const parsedValue = JSON.parse(savedValue) as StoredWorkspaceState;
+
+    return {
+      vocabulary: Array.isArray(parsedValue.vocabulary) ? parsedValue.vocabulary : [],
+      writings: Array.isArray(parsedValue.writings) ? parsedValue.writings : [],
+    };
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalWorkspaceState(state: StoredWorkspaceState) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(state));
+  window.dispatchEvent(new Event("nihongo-palette-workspace-updated"));
+}
+
+function updateLocalWorkspaceVocabularyExample({
+  example,
+  vocabularyId,
+}: {
+  example: string;
+  vocabularyId: string;
+}) {
+  const localWorkspace = readLocalWorkspaceState();
+  const localVocabulary = localWorkspace.vocabulary ?? [];
+  let didUpdate = false;
+  const nextVocabulary = localVocabulary.map((item) => {
+    if (item.id !== vocabularyId) {
+      return item;
+    }
+
+    didUpdate = true;
+    return { ...item, example, sourceSentence: "" };
+  });
+
+  if (!didUpdate) {
+    return false;
+  }
+
+  writeLocalWorkspaceState({ ...localWorkspace, vocabulary: nextVocabulary });
+  return true;
+}
+
+function buildLocalWorkspaceWordbookData() {
+  const localWorkspace = readLocalWorkspaceState();
+  const localWritings = localWorkspace.writings ?? [];
+  const localVocabulary = (localWorkspace.vocabulary ?? []).filter((item) => item.writingId);
+  const writingIdsWithWords = new Set(localVocabulary.map((item) => item.writingId));
+
+  const localWorkspaceSources = localWritings
+    .filter((writing) => writingIdsWithWords.has(writing.id))
+    .map((writing): QuizSource => ({
+      id: writing.id,
+      type: "writing",
+      title: writing.title || "無題の作文",
+      date: writing.updatedAt.replaceAll("-", "/"),
+      description: writing.draft,
+    }));
+
+  const localWorkspaceWords = localVocabulary.map((item): QuizWord => ({
+    id: item.id,
+    word: item.word,
+    reading: item.reading,
+    meaning: item.meaning,
+    example: item.example,
+    sourceId: item.writingId ?? "unknown-source",
+    sourceType: "writing",
+    storageTable: "local_workspace",
+  }));
+
+  return { localWorkspaceSources, localWorkspaceWords };
+}
+
 export function VocabularyQuizClient({ role }: { role: Role }) {
   const [activeTab, setActiveTab] = useState<MainTab>("ai");
   const [aiTopic, setAiTopic] = useState("旅行");
@@ -306,7 +401,8 @@ export function VocabularyQuizClient({ role }: { role: Role }) {
 
     async function loadWordbookData() {
       setStatus("Supabaseから作文・記事・語彙を読み込んでいます。");
-      const localArticleSources = readLocalSavedArticles()
+      const localArticles = readLocalSavedArticles();
+      const localArticleSources = localArticles
         .filter((article) => article.vocabulary.length > 0)
         .map((article): QuizSource => ({
           id: article.id,
@@ -315,7 +411,7 @@ export function VocabularyQuizClient({ role }: { role: Role }) {
           date: article.createdAt,
           description: `${article.level} ・ ${article.topic}`,
         }));
-      const localArticleWords = readLocalSavedArticles().flatMap((article) =>
+      const localArticleWords = localArticles.flatMap((article) =>
         article.vocabulary.map((item, index): QuizWord => ({
           id: item.id ?? `${article.id}-local-vocab-${index}`,
           word: item.word,
@@ -327,14 +423,17 @@ export function VocabularyQuizClient({ role }: { role: Role }) {
           storageTable: "local_article",
         }))
       );
+      const { localWorkspaceSources, localWorkspaceWords } = buildLocalWorkspaceWordbookData();
+      const localSources = mergeQuizSources(localArticleSources, localWorkspaceSources);
+      const localWords = mergeQuizWords(localArticleWords, localWorkspaceWords);
 
-      if (localArticleSources.length > 0 || localArticleWords.length > 0) {
-        const firstSourceId = localArticleSources[0]?.id ?? "";
-        setSources((currentSources) => mergeQuizSources(currentSources, localArticleSources));
-        setWords((currentWords) => mergeQuizWords(currentWords, localArticleWords));
+      if (localSources.length > 0 || localWords.length > 0) {
+        const firstSourceId = localSources[0]?.id ?? "";
+        setSources((currentSources) => mergeQuizSources(currentSources, localSources));
+        setWords((currentWords) => mergeQuizWords(currentWords, localWords));
         setExpandedSourceIds(firstSourceId ? [firstSourceId] : []);
         setSelectedSourceIds(firstSourceId ? [firstSourceId] : []);
-        setStatus("保存済み記事の語彙を単語帳テストに反映しました。");
+        setStatus("保存済み作文・記事の語彙を単語帳テストに反映しました。");
       }
 
       const [writingsResult, writingVocabularyResult, articlesResult] = await Promise.all([
@@ -361,8 +460,8 @@ export function VocabularyQuizClient({ role }: { role: Role }) {
 
       if (writingsResult.error && articlesResult.error) {
         setStatus(
-          localArticleWords.length > 0
-            ? "ローカル保存済み記事の語彙を表示しています。Supabase読み込みは失敗しました。"
+          localWords.length > 0
+            ? "ローカル保存済み作文・記事の語彙を表示しています。Supabase読み込みは失敗しました。"
             : "Supabase読み込みに失敗しました。モックデータで確認できます。"
         );
         return;
@@ -391,8 +490,8 @@ export function VocabularyQuizClient({ role }: { role: Role }) {
         ...(writingVocabularyResult.data ?? []).map(mapWritingVocabularyRow),
         ...(articleVocabularyResult.data ?? []).map(mapArticleVocabularyRow),
       ];
-      const mergedWords = mergeQuizWords(dbWords, localArticleWords);
-      const mergedSources = mergeQuizSources(dbSources, localArticleSources);
+      const mergedWords = mergeQuizWords(dbWords, localWords);
+      const mergedSources = mergeQuizSources(dbSources, localSources);
 
       if (mergedSources.length === 0 && mergedWords.length === 0) {
         setStatus("Supabaseに語彙データがまだありません。モックデータで確認できます。");
@@ -551,6 +650,15 @@ export function VocabularyQuizClient({ role }: { role: Role }) {
         vocabularyId: currentWord.id,
       });
       setStatus("例文を単語帳一覧に反映しました。");
+      return;
+    }
+
+    if (currentWord.storageTable === "local_workspace") {
+      updateLocalWorkspaceVocabularyExample({
+        example: sentence,
+        vocabularyId: currentWord.id,
+      });
+      setStatus("例文を単語帳一覧と作文ワークスペースの語彙に反映しました。");
       return;
     }
 

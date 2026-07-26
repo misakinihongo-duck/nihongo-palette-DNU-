@@ -1108,23 +1108,11 @@ export function WorkspaceClient({ role }: WorkspaceClientProps) {
               <RubyText segments={furiganaSegments} showFurigana={furiganaEnabled} />
             ) : (
               <p className="text-lg font-bold text-[#7B8C98]">
-                ここに作文を書くと、閲覧モードで読みやすく表示されます。
+                ここに作文を書くと、閲覧モードで本文にふりがなを表示できます。
               </p>
             )}
           </div>
         )}
-
-        {composerMode === "edit" ? (
-          <section className="mt-6 rounded-2xl border border-[#DDEAF1] bg-[#F7FCFF] p-4">
-            <h2 className="flex items-center gap-2 text-xl font-black text-[#10233B]">
-              <span className="text-[#1592D1]">あ</span>
-              ふりがなプレビュー
-            </h2>
-            <div className={`mt-4 rounded-[20px] border border-[#DDEAF1] bg-white px-5 py-4 ${writingTextClasses} text-[#10233B]`}>
-              <RubyText segments={furiganaSegments} showFurigana={furiganaEnabled} />
-            </div>
-          </section>
-        ) : null}
 
         <section className="mt-6 rounded-[28px] border border-[#DDEAF1] bg-[#F7FCFF] p-4">
           <div className="rounded-[24px] border border-[#DDEAF1] bg-white p-5 shadow-[0_14px_34px_rgba(47,136,197,0.08)]">
