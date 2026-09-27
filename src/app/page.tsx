@@ -1,69 +1,88 @@
 import Image from "next/image";
+import { AuthPanel } from "@/components/auth-panel";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
+import { fetchCurrentUserProfile } from "@/lib/user-profile";
 
-export default function Home() {
+export default async function Home() {
+  const config = getSupabaseConfig();
+  const supabase = await createClient();
+  const profileResult = supabase ? await fetchCurrentUserProfile(supabase) : null;
+  const isSignedIn = Boolean(profileResult?.user);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <main className="min-h-screen bg-[#fbfaf7]">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-6 sm:px-8 lg:py-10">
+        <header className="flex items-center justify-between gap-4">
+          <Image
+            alt="Nihongo Palette"
+            className="h-auto w-44"
+            height={54}
+            priority
+            src="/brand/nihongo-palette-logo-horizontal.svg"
+            width={224}
+          />
+          <span className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
+            Sprint 1
+          </span>
+        </header>
+
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <div className="grid gap-5">
+            <div className="grid gap-4">
+              <p className="text-sm font-semibold text-teal-700">Learn → Experience → Connect</p>
+              <h1 className="max-w-3xl text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
+                日本語を学び、体験し、人や地域とつながる入口を作っています。
+              </h1>
+              <p className="max-w-2xl text-base leading-8 text-slate-700">
+                Notionの企画書・画面仕様書・DB設計書をSource of Truthとして、まずはSupabase接続、
+                Auth、User DB同期の最小縦切りを確認する画面です。
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                ["Supabase", config.isConfigured ? "環境変数 OK" : "設定待ち"],
+                ["Auth", isSignedIn ? "Session OK" : "未ログイン"],
+                ["User DB", profileResult?.profile ? "users取得 OK" : "確認待ち"],
+              ].map(([label, value]) => (
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" key={label}>
+                  <p className="text-xs font-semibold uppercase text-slate-500">{label}</p>
+                  <p className="mt-2 text-lg font-bold text-slate-950">{value}</p>
+                </div>
+              ))}
+            </div>
+
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-950">接続確認</h2>
+              <div className="mt-4 grid gap-3 text-sm leading-7 text-slate-700">
+                <p>
+                  {isSignedIn
+                    ? `${profileResult?.user?.email ?? "ログインユーザー"}としてログインしています。`
+                    : "Google認証を最終形にしつつ、Email/PasswordでもAuth → User → DBの疎通を確認できます。"}
+                </p>
+                {profileResult?.error ? (
+                  <p className="rounded-md bg-rose-50 p-3 text-rose-800">{profileResult.error}</p>
+                ) : null}
+                {profileResult?.profile ? (
+                  <dl className="grid gap-2 rounded-md bg-slate-50 p-3">
+                    <div className="flex justify-between gap-4">
+                      <dt className="font-medium">Name</dt>
+                      <dd>{profileResult.profile.name}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="font-medium">Mode</dt>
+                      <dd>{profileResult.profile.last_active_mode}</dd>
+                    </div>
+                  </dl>
+                ) : null}
+              </div>
+            </section>
+          </div>
+
+          <AuthPanel isConfigured={config.isConfigured} />
+        </section>
+      </div>
       </main>
-    </div>
   );
 }
